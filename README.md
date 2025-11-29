@@ -1,6 +1,6 @@
 Legal AI Scanner — MVP (Lovable + AWS)
 
-MVP: وكيل ذكي لفحص العقود والمستندات لكشف التزوير. واجهة بسيطة من صفحتين مبنية على Lovable، وباك-إند تحليلي على AWS (S3, Textract, Comprehend). الكود الخلفي تم توليده بمساعدة Amazon Q Developer.
+MVP: وكيل ذكي لفحص العقود والمستندات لكشف التزوير. واجهة بسيطة من صفحتين مبنيةن على Lovable، وباك-إند تحليلي على AWS (S3, Textract, Comprehend). الكود الخلفي تم توليده بمساعدة Amazon Q Developer.
 
 الروابط الخاصه بالمشروع:
 -MVP (Lovable):
