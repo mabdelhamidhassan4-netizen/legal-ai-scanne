@@ -12,7 +12,8 @@ MVP: وكيل ذكي لفحص العقود والمستندات لكشف الت�
 
 /docs/amazon_q_proof.png ← إثبات استخدام Amazon Q Developer (Screen shot & Video)
 
-https://drive.google.com/file/d/14UmoFp2pV-GMiJYr4ozZRmMxPTkAAwNz/view?usp=drivesdk-https://drive.google.com/file/d/11hKudv-EpdGS6LXOBAsdwBBky6S7hrQg/view?usp=drivesdk
+https://drive.google.com/file/d/14UmoFp2pV-GMiJYr4ozZRmMxPTkAAwNz/view?usp=drivesdk-
+https://drive.google.com/file/d/11hKudv-EpdGS6LXOBAsdwBBky6S7hrQg/view?usp=drivesdk
 https://drive.google.com/file/d/1ahTabWArmu80WHPew2iq69A5_OixCOqe/view?usp=drivesdk
 //Video link https://drive.google.com/file/d/1lDYXaea84YvuI9FiIHdESXTDcV5jMYiS/view?usp=drivesdk
 
