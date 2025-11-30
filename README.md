@@ -24,12 +24,8 @@ https://drive.google.com/file/d/14UmoFp2pV-GMiJYr4ozZRmMxPTkAAwNz/view?usp=drive
 https://drive.google.com/file/d/11hKudv-EpdGS6LXOBAsdwBBky6S7hrQg/view?usp=drivesdk
 https://drive.google.com/file/d/1ahTabWArmu80WHPew2iq69A5_OixCOqe/view?usp=drivesdk https://drive.google.com/file/d/1lDYXaea84YvuI9FiIHdESXTDcV5jMYiS/view?usp=drivesdk
 
-/demo/video-link.txt ← https://youtube.com/shorts/EV4jSbirLVk?si=w2vKATsn0WfsVt2M
-
-/mvp/lovable-link.txt ← https://ai-doc-guard-60.lovable.app/
-
    Q Developer تم استخدام Amazon Q Developer لتوليد منطق التحليل واحرى أجزاء الكود الخلفي. راجع: /docs/amazon_q_proof.png.
 ملاحظة 
 
-النظام MVP يعمل عبر رابط Lovable أعلاه.
+ .
 الكود المصدري موثّق في /src/README_CODE.md (تعليمات تشغيل قصيرة: إعداد AWS credentials، إنشاء S3 bucket، تشغيل script
