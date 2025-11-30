@@ -8,7 +8,10 @@ MVP: وكيل ذكي لفحص العقود والمستندات لكشف الت�
 
 /src/document_analyzer.py ← كود التحليل (Amazon Q generated)
 /docs/project_documentation.pdf ← توثيق المشروع
-/docs/amazon_q_proof.png ← إثبات استخدام Amazon Q Developer (لقطة شاشة)
+/docs/amazon_q_proof.png ← إثبات استخدام Amazon Q Developer (Screen shot & Video)
+https://https://drive.google.com/file/d/14UmoFp2pV-GMiJYr4ozZRmMxPTkAAwNz/view?usp=drivesdk-https://https://drive.google.com/file/d/11hKudv-EpdGS6LXOBAsdwBBky6S7hrQg/view?usp=drivesdk
+https://https://drive.google.com/file/d/1ahTabWArmu80WHPew2iq69A5_OixCOqe/view?usp=drivesdk
+//Video link https://drive.google.com/file/d/1lDYXaea84YvuI9FiIHdESXTDcV5jMYiS/view?usp=drivesdk
 /demo/video-link.txt ← رابط فيديو اليوتيوب
 /mvp/lovable-link.txt ← رابط الـMVP
 إثبات استخدام Amazon Q Developer تم استخدام Amazon Q Developer لتوليد منطق التحليل واحرى أجزاء الكود الخلفي. راجع: /docs/amazon_q_proof.png. ملاحظة سريعة
