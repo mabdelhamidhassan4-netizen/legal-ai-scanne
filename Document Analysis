@@ -1,0 +1,323 @@
+import boto3
+import json
+import uuid
+from datetime import datetime
+from typing import Dict, Any, Optional
+
+class DocumentAnalyzer:
+"""
+MVP لتحليل المستندات باستخدام خدمات AWS
+يستخدم S3 لتخزين الملفات، Textract لاستخراج النص، و Comprehend لتحليل النص
+"""
+
+def __init__(self, region_name: str = 'us-east-1'):  
+    """  
+    تهيئة العميل مع خدمات AWS  
+    """  
+    self.s3_client = boto3.client('s3', region_name=region_name)  
+    self.textract_client = boto3.client('textract', region_name=region_name)  
+    self.comprehend_client = boto3.client('comprehend', region_name=region_name)  
+    self.region = region_name  
+  
+def upload_file_to_s3(self, file_path: str, bucket_name: str,   
+                     object_key: Optional[str] = None) -> str:  
+    """  
+    رفع ملف إلى Amazon S3  
+      
+    Args:  
+        file_path: مسار الملف المحلي  
+        bucket_name: اسم الـ bucket في S3  
+        object_key: اسم الملف في S3 (اختياري)  
+      
+    Returns:  
+        object_key: اسم الملف في S3  
+    """  
+    try:  
+        if not object_key:  
+            # إنشاء اسم فريد للملف  
+            file_extension = file_path.split('.')[-1]  
+            object_key = f"documents/{uuid.uuid4()}.{file_extension}"  
+          
+        # رفع الملف إلى S3  
+        self.s3_client.upload_file(file_path, bucket_name, object_key)  
+        print(f"✅ تم رفع الملف بنجاح إلى S3: s3://{bucket_name}/{object_key}")  
+          
+        return object_key  
+          
+    except Exception as e:  
+        print(f"❌ خطأ في رفع الملف إلى S3: {str(e)}")  
+        raise  
+  
+def extract_text_from_document(self, bucket_name: str, object_key: str) -> str:  
+    """  
+    استخراج النص من المستند باستخدام Amazon Textract  
+      
+    Args:  
+        bucket_name: اسم الـ bucket في S3  
+        object_key: اسم الملف في S3  
+      
+    Returns:  
+        extracted_text: النص المستخرج من المستند  
+    """  
+    try:  
+        # استدعاء Textract لاستخراج النص  
+        response = self.textract_client.detect_document_text(  
+            Document={  
+                'S3Object': {  
+                    'Bucket': bucket_name,  
+                    'Name': object_key  
+                }  
+            }  
+        )  
+          
+        # تجميع النص المستخرج  
+        extracted_text = ""  
+        for block in response['Blocks']:  
+            if block['BlockType'] == 'LINE':  
+                extracted_text += block['Text'] + "\n"  
+          
+        print(f"✅ تم استخراج النص بنجاح من المستند")  
+        print(f"📄 طول النص المستخرج: {len(extracted_text)} حرف")  
+          
+        return extracted_text.strip()  
+          
+    except Exception as e:  
+        print(f"❌ خطأ في استخراج النص من المستند: {str(e)}")  
+        raise  
+  
+def analyze_text_with_comprehend(self, text: str) -> Dict[str, Any]:  
+    """  
+    تحليل النص باستخدام Amazon Comprehend لاستخراج الكيانات والمشاعر  
+      
+    Args:  
+        text: النص المراد تحليله  
+      
+    Returns:  
+        analysis_results: نتائج التحليل (الكيانات والمشاعر)  
+    """  
+    try:  
+        # تحديد طول النص المسموح (5000 حرف كحد أقصى لـ Comprehend)  
+        if len(text) > 5000:  
+            text = text[:5000]  
+            print("⚠️ تم اقتطاع النص إلى 5000 حرف للتحليل")  
+          
+        # استخراج الكيانات  
+        entities_response = self.comprehend_client.detect_entities(  
+            Text=text,  
+            LanguageCode='en'  # يمكن تغييرها حسب لغة النص  
+        )  
+          
+        # تحليل المشاعر  
+        sentiment_response = self.comprehend_client.detect_sentiment(  
+            Text=text,  
+            LanguageCode='en'  
+        )  
+          
+        # تنظيم النتائج  
+        analysis_results = {  
+            'entities': [  
+                {  
+                    'text': entity['Text'],  
+                    'type': entity['Type'],  
+                    'confidence': round(entity['Score'], 4)  
+                }  
+                for entity in entities_response['Entities']  
+            ],  
+            'sentiment': {  
+                'overall': sentiment_response['Sentiment'],  
+                'confidence_scores': {  
+                    'positive': round(sentiment_response['SentimentScore']['Positive'], 4),  
+                    'negative': round(sentiment_response['SentimentScore']['Negative'], 4),  
+                    'neutral': round(sentiment_response['SentimentScore']['Neutral'], 4),  
+                    'mixed': round(sentiment_response['SentimentScore']['Mixed'], 4)  
+                }  
+            }  
+        }  
+          
+        print(f"✅ تم تحليل النص بنجاح")  
+        print(f"🔍 عدد الكيانات المكتشفة: {len(analysis_results['entities'])}")  
+        print(f"😊 المشاعر العامة: {analysis_results['sentiment']['overall']}")  
+          
+        return analysis_results  
+          
+    except Exception as e:  
+        print(f"❌ خطأ في تحليل النص: {str(e)}")  
+        raise  
+  
+def generate_report(self, user_data: Dict[str, str], extracted_text: str,   
+                   analysis_results: Dict[str, Any],   
+                   document_info: Dict[str, str]) -> Dict[str, Any]:  
+    """  
+    إنشاء تقرير JSON شامل  
+      
+    Args:  
+        user_data: بيانات المستخدم (الاسم، الإيميل، نوع المستند)  
+        extracted_text: النص المستخرج  
+        analysis_results: نتائج التحليل  
+        document_info: معلومات المستند  
+      
+    Returns:  
+        report: التقرير النهائي بصيغة JSON  
+    """  
+    try:  
+        report = {  
+            'report_metadata': {  
+                'report_id': str(uuid.uuid4()),  
+                'generated_at': datetime.now().isoformat(),  
+                'aws_region': self.region,  
+                'services_used': ['S3', 'Textract', 'Comprehend']  
+            },  
+            'user_information': {  
+                'name': user_data.get('name', 'غير محدد'),  
+                'email': user_data.get('email', 'غير محدد'),  
+                'document_type': user_data.get('document_type', 'غير محدد')  
+            },  
+            'document_information': {  
+                's3_bucket': document_info.get('bucket_name'),  
+                's3_object_key': document_info.get('object_key'),  
+                'text_length': len(extracted_text),  
+                'processing_timestamp': datetime.now().isoformat()  
+            },  
+            'extracted_text': extracted_text,  
+            'text_analysis': {  
+                'entities': analysis_results['entities'],  
+                'sentiment_analysis': analysis_results['sentiment'],  
+                'summary': {  
+                    'total_entities': len(analysis_results['entities']),  
+                    'high_confidence_entities': len([  
+                        e for e in analysis_results['entities']   
+                        if e['confidence'] > 0.8  
+                    ]),  
+                    'dominant_sentiment': analysis_results['sentiment']['overall']  
+                }  
+            }  
+        }  
+          
+        print(f"✅ تم إنشاء التقرير بنجاح")  
+        print(f"📊 معرف التقرير: {report['report_metadata']['report_id']}")  
+          
+        return report  
+          
+    except Exception as e:  
+        print(f"❌ خطأ في إنشاء التقرير: {str(e)}")  
+        raise  
+  
+def process_document_complete(self, file_path: str, bucket_name: str,   
+                            user_data: Dict[str, str]) -> Dict[str, Any]:  
+    """  
+    معالجة شاملة للمستند - الدالة الرئيسية  
+      
+    Args:  
+        file_path: مسار الملف المحلي  
+        bucket_name: اسم الـ bucket في S3  
+        user_data: بيانات المستخدم  
+      
+    Returns:  
+        final_report: التقرير النهائي الشامل  
+    """  
+    try:  
+        print("🚀 بدء معالجة المستند...")  
+          
+        # 1. رفع الملف إلى S3  
+        print("\n📤 الخطوة 1: رفع الملف إلى S3")  
+        object_key = self.upload_file_to_s3(file_path, bucket_name)  
+          
+        # 2. استخراج النص باستخدام Textract  
+        print("\n📄 الخطوة 2: استخراج النص من المستند")  
+        extracted_text = self.extract_text_from_document(bucket_name, object_key)  
+          
+        # 3. تحليل النص باستخدام Comprehend  
+        print("\n🔍 الخطوة 3: تحليل النص")  
+        analysis_results = self.analyze_text_with_comprehend(extracted_text)  
+          
+        # 4. إنشاء التقرير النهائي  
+        print("\n📊 الخطوة 4: إنشاء التقرير النهائي")  
+        document_info = {  
+            'bucket_name': bucket_name,  
+            'object_key': object_key  
+        }  
+          
+        final_report = self.generate_report(  
+            user_data, extracted_text, analysis_results, document_info  
+        )  
+          
+        print("\n✅ تمت معالجة المستند بنجاح!")  
+        return final_report  
+          
+    except Exception as e:  
+        print(f"\n❌ خطأ في معالجة المستند: {str(e)}")  
+        raise
+
+مثال على الاستخدام
+
+def main():
+"""
+مثال على كيفية استخدام DocumentAnalyzer
+"""
+try:
+# تهيئة محلل المستندات
+analyzer = DocumentAnalyzer(region_name='us-east-1')
+
+# بيانات المستخدم  
+    user_data = {  
+        'name': 'أحمد محمد',  
+        'email': 'ahmed@example.com',  
+        'document_type': 'فاتورة'  
+    }  
+      
+    # معالجة المستند  
+    # ملاحظة: تأكد من وجود الملف والـ bucket قبل التشغيل  
+    file_path = 'sample_document.pdf'  # مسار الملف  
+    bucket_name = 'my-document-analysis-bucket'  # اسم الـ bucket  
+      
+    # تشغيل المعالجة الشاملة  
+    report = analyzer.process_document_complete(file_path, bucket_name, user_data)  
+      
+    # حفظ التقرير في ملف JSON  
+    report_filename = f"document_analysis_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"  
+    with open(report_filename, 'w', encoding='utf-8') as f:  
+        json.dump(report, f, ensure_ascii=False, indent=2)  
+      
+    print(f"\n💾 تم حفظ التقرير في: {report_filename}")  
+      
+    # طباعة ملخص النتائج  
+    print("\n📋 ملخص النتائج:")  
+    print(f"   👤 المستخدم: {report['user_information']['name']}")  
+    print(f"   📧 الإيميل: {report['user_information']['email']}")  
+    print(f"   📄 نوع المستند: {report['user_information']['document_type']}")  
+    print(f"   📊 عدد الكيانات: {report['text_analysis']['summary']['total_entities']}")  
+    print(f"   😊 المشاعر العامة: {report['text_analysis']['summary']['dominant_sentiment']}")  
+      
+except Exception as e:  
+    print(f"❌ خطأ في التطبيق الرئيسي: {str(e)}")
+
+if name == "main":
+main()وإليك أيضاً ملف  requirements.txt  للمتطلبات:boto3>=1.26.0
+botocore>=1.29.0وملف  README.md  لمشروعك على GitHub:# AWS Document Analysis MVP
+
+مشروع MVP لتحليل المستندات باستخدام خدمات Amazon Web Services
+
+الخدمات المستخدمة
+
+Amazon S3: تخزين الملفات
+
+Amazon Textract: استخراج النص من PDF والصور
+
+Amazon Comprehend: تحليل النص واستخراج الكيانات والمشاعر
+
+
+المتطلبات
+
+pip install -r requirements.txtالإعدادتكوين AWS CLI أو متغيرات البيئة1. إنشاء S3 bucket2. التأكد من صلاحيات IAM للخدمات المطلوبة3. الاستخدامfrom document_analyzer import DocumentAnalyzer  
+  
+analyzer = DocumentAnalyzer()  
+report = analyzer.process_document_complete(  
+    file_path='document.pdf',  
+    bucket_name='my-bucket',  
+    user_data={'name': 'أحمد', 'email': 'ahmed@example.com', 'document_type': 'فاتورة'}  
+)الميزاترفع الملفات إلى S3• استخراج النص من PDF/الصور• تحليل الكيانات والمشاعر• إنشاء تقارير JSON شاملة• **ملاحظات مهمة للاستخدام:**  
+  
+1. **إعداد AWS**: تأكد من تكوين AWS credentials باستخدام AWS CLI أو متغيرات البيئة  
+2. **الصلاحيات**: تحتاج صلاحيات IAM للوصول إلى S3, Textract, و Comprehend  
+3. **إنشاء S3 Bucket**: أنشئ bucket في S3 قبل تشغيل الكود  
+4. **أنواع الملفات المدعومة**: PDF, PNG, JPEG للـ Textract
