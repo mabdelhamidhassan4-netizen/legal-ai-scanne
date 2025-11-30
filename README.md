@@ -28,4 +28,10 @@ https://drive.google.com/file/d/1ahTabWArmu80WHPew2iq69A5_OixCOqe/view?usp=drive
 ملاحظة 
 
  .
-الكود المصدري موثّق في /src/README_CODE.md (تعليمات تشغيل قصيرة: إعداد AWS credentials، إنشاء S3 bucket، تشغيل script
+الكود المصدري موثّق في /src/README_CODE.md
+(تعليمات تشغيل قصيرة: إعداد AWS credentials، إنشاء S3 bucket، تشغيل script
+  
+1. إعداد AWS: تأكد من تكوين AWS credentials باستخدام AWS CLI أو متغيرات البيئة  
+2. الصلاحيات: تحتاج صلاحيات IAM للوصول إلى S3, Textract, و Comprehend  
+3. انشاء S3 Bucket: أنشئ bucket في S3 قبل تشغيل الكود  
+4. انواع الملفات المدعومة: PDF, PNG, JPEG للـ Textract
